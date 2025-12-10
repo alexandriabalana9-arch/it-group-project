@@ -1,0 +1,256 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Course Portfolio — [Course Name]</title>
+  <style>
+    :root{--accent:#07689f;--muted:#6b7280}
+    body{font-family:Inter,system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif;margin:0;color:#111;background:#f7fafc}
+    .container{max-width:1000px;margin:32px auto;padding:24px;background:white;border-radius:12px;box-shadow:0 6px 24px rgba(2,6,23,0.06)}
+    header{display:flex;gap:16px;align-items:center}
+    header img{width:72px;height:72px;object-fit:cover;border-radius:10px}
+    h1{margin:0;font-size:1.6rem}
+    p.lead{color:var(--muted);margin:6px 0 18px}
+    .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px}
+    .card{background:#fff;border:1px solid #eef2f7;padding:16px;border-radius:10px}
+    .card h3{margin:0 0 8px}
+    .artifact{width:100%;height:180px;object-fit:cover;border-radius:8px;background:#eef4fb;display:flex;align-items:center;justify-content:center;color:var(--muted)}
+    .meta{font-size:0.9rem;color:var(--muted);margin-top:8px}
+    .reflection{margin-top:12px;background:#fbfdff;padding:12px;border-radius:8px;border:1px dashed #e6eef8}
+    .member-reflection{margin-top:18px}
+    footer{margin-top:20px;color:var(--muted);font-size:0.9rem;text-align:center}
+    .controls{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+    .btn{display:inline-block;padding:8px 12px;border-radius:8px;border:0;background:var(--accent);color:white;text-decoration:none;font-weight:600}
+    .btn.ghost{background:transparent;color:var(--accent);border:1px solid #dbeffb}
+    label{display:block;font-weight:600;margin-top:10px}
+    input[type="text"], textarea, input[type="url"]{width:100%;padding:8px;border-radius:8px;border:1px solid #e6eef8;margin-top:6px}
+    small{color:var(--muted)}
+    .note{background:#fff6e6;padding:10px;border-radius:8px;border:1px solid #fde7c9;color:#6b4b00}
+    @media (max-width:520px){.container{margin:12px;padding:16px}}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <img src="" alt="Course or Group Logo (replace)" id="logo"/>
+      <div>
+        <h1 id="courseTitle">[Subject Title] — Portfolio</h1>
+        <p class="lead" id="groupInfo">Group Members: Alice, Bob, Carol — Semester: [Fall 2025]</p>
+      </div>
+    </header>
+
+    <section style="margin-top:18px">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap">
+        <h2 style="margin:0">Activities</h2>
+        <div class="controls">
+          <button class="btn" onclick="addActivity()">+ Add activity</button>
+          <a class="btn ghost" href="#publish" onclick="showPublishInstructions()">How to publish</a>
+        </div>
+      </div>
+
+      <p class="note" id="introNote">Use the <strong>Add activity</strong> button to add each module/activity. For each activity include a title, upload an artifact (image / screenshot / link), and write a brief reflection. The site auto-saves to your browser (localStorage).</p>
+
+      <div id="activities" class="grid" style="margin-top:14px">
+        <!-- Activity cards will be injected here -->
+      </div>
+    </section>
+
+    <section class="member-reflection">
+      <h2>Final Reflections (1 page per member)</h2>
+      <p class="meta">Add a final reflection for each group member below. Keep the reflection to roughly one page per person (around 300–600 words).</p>
+      <div id="members" style="margin-top:12px">
+        <!-- Member reflections injected here -->
+      </div>
+      <div style="margin-top:10px">
+        <label>New member name</label>
+        <input id="newMemberName" type="text" placeholder="Member full name" />
+        <button class="btn" onclick="addMember()">Add member</button>
+      </div>
+    </section>
+
+    <footer>
+      <p>Tip: To publish this site, download this file as <strong>index.html</strong> and host it on GitHub Pages, Netlify, or any static host. See 'How to publish' for quick steps.</p>
+    </footer>
+  </div>
+
+  <template id="activityTemplate">
+    <div class="card">
+      <h3 class="act-title">Activity title</h3>
+      <div class="artifact" data-placeholder>Artifact preview</div>
+      <div class="meta">Module: <span class="act-module">---</span> • Date: <span class="act-date">--</span></div>
+      <div class="reflection">
+        <strong>Brief reflection</strong>
+        <p class="act-ref">What did you do? What did you learn? Challenges?</p>
+      </div>
+      <div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn" onclick="editActivity(this)">Edit</button>
+        <button class="btn ghost" onclick="duplicateActivity(this)">Duplicate</button>
+        <button class="btn ghost" onclick="removeActivity(this)">Remove</button>
+      </div>
+    </div>
+  </template>
+
+  <template id="memberTemplate">
+    <div class="card">
+      <h3 class="member-name">Member Name</h3>
+      <div class="meta">Final reflection (one page)</div>
+      <div class="reflection">
+        <p class="member-ref">Member's final reflection goes here.</p>
+      </div>
+      <div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn" onclick="editMember(this)">Edit</button>
+        <button class="btn ghost" onclick="removeMember(this)">Remove</button>
+      </div>
+    </div>
+  </template>
+
+  <!-- Edit modal (simple) -->
+  <div id="modal" style="position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(2,6,23,0.5);z-index:40">
+    <div style="width:92%;max-width:720px;background:white;padding:18px;border-radius:10px;">
+      <h3 id="modalTitle">Edit item</h3>
+      <div style="margin-top:10px">
+        <label>Title</label>
+        <input id="m_title" type="text" />
+        <label>Module / short note</label>
+        <input id="m_module" type="text" />
+        <label>Date</label>
+        <input id="m_date" type="text" placeholder="YYYY-MM-DD" />
+        <label>Artifact (image URL or file link)</label>
+        <input id="m_artifact" type="url" placeholder="https://... or leave blank" />
+        <label>Brief reflection</label>
+        <textarea id="m_reflection" rows="6"></textarea>
+        <div style="display:flex;gap:8px;margin-top:12px">
+          <button class="btn" onclick="saveModal()">Save</button>
+          <button class="btn ghost" onclick="closeModal()">Cancel</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Data model stored in localStorage so students can edit and export
+    const STORAGE_KEY = 'course_portfolio_v1';
+    let state = loadState();
+    let editing = null;
+
+    function loadState(){
+      try{const s = localStorage.getItem(STORAGE_KEY); if(s) return JSON.parse(s);}catch(e){}
+      return {activities: [
+        {title:'Converting Number Systems', module:'Module 3', date:'2025-10-15', artifact:'', reflection:'In this activity we converted numbers between decimal, binary, and hexadecimal. I learned the division/remainder method and two\'s complement for negatives. Challenge: remembering place values. I practiced by doing many conversions.'}
+      ], members:[{name:'Alice', reflection:'My biggest takeaways were... (replace with your one-page reflection)'}]}
+    }
+    function saveState(){localStorage.setItem(STORAGE_KEY, JSON.stringify(state))}
+
+    function render(){
+      const container = document.getElementById('activities'); container.innerHTML='';
+      state.activities.forEach((a,idx)=>{
+        const tpl = document.getElementById('activityTemplate').content.cloneNode(true);
+        tpl.querySelector('.act-title').textContent = a.title;
+        tpl.querySelector('.act-module').textContent = a.module || '-';
+        tpl.querySelector('.act-date').textContent = a.date || '-';
+        const art = tpl.querySelector('.artifact');
+        if(a.artifact) art.innerHTML = `<img src="${a.artifact}" alt="artifact" style="width:100%;height:100%;object-fit:cover;border-radius:8px">`;
+        else art.textContent = 'No artifact yet — replace with screenshot or file link';
+        tpl.querySelector('.act-ref').textContent = a.reflection || '';
+        // attach index for buttons
+        tpl.querySelector('button[onclick="editActivity(this)"]').dataset.idx = idx;
+        tpl.querySelector('button[onclick="duplicateActivity(this)"]').dataset.idx = idx;
+        tpl.querySelector('button[onclick="removeActivity(this)"]').dataset.idx = idx;
+        container.appendChild(tpl);
+      })
+
+      const mcont = document.getElementById('members'); mcont.innerHTML='';
+      state.members.forEach((m,idx)=>{
+        const tpl = document.getElementById('memberTemplate').content.cloneNode(true);
+        tpl.querySelector('.member-name').textContent = m.name;
+        tpl.querySelector('.member-ref').textContent = m.reflection || '';
+        tpl.querySelector('button[onclick="editMember(this)"]').dataset.idx = idx;
+        tpl.querySelector('button[onclick="removeMember(this)"]').dataset.idx = idx;
+        mcont.appendChild(tpl);
+      })
+      saveState();
+    }
+
+    function addActivity(){
+      state.activities.unshift({title:'New activity', module:'Module X', date:new Date().toISOString().slice(0,10), artifact:'', reflection:'Write a short reflection...'});
+      render();
+      // open the first one for editing
+      setTimeout(()=>{
+        const btn = document.querySelector('button[onclick="editActivity(this)"]'); if(btn) btn.click();
+      },50)
+    }
+    function editActivity(btn){
+      const idx = btn.dataset.idx; editing = {type:'activity', idx};
+      const a = state.activities[idx];
+      document.getElementById('m_title').value = a.title || '';
+      document.getElementById('m_module').value = a.module || '';
+      document.getElementById('m_date').value = a.date || '';
+      document.getElementById('m_artifact').value = a.artifact || '';
+      document.getElementById('m_reflection').value = a.reflection || '';
+      document.getElementById('modalTitle').textContent = 'Edit activity';
+      document.getElementById('modal').style.display = 'flex';
+    }
+    function duplicateActivity(btn){
+      const idx = btn.dataset.idx; const copy = JSON.parse(JSON.stringify(state.activities[idx])); state.activities.splice(parseInt(idx)+1,0,copy); render();
+    }
+    function removeActivity(btn){
+      const idx = btn.dataset.idx; if(confirm('Remove this activity?')){state.activities.splice(idx,1); render();}
+    }
+
+    function addMember(){
+      const name = document.getElementById('newMemberName').value.trim(); if(!name){alert('Enter a name');return}
+      state.members.push({name, reflection:'Write your final one-page reflection here.'}); document.getElementById('newMemberName').value=''; render();
+    }
+    function editMember(btn){
+      const idx = btn.dataset.idx; editing = {type:'member', idx};
+      const m = state.members[idx];
+      document.getElementById('m_title').value = m.name || '';
+      document.getElementById('m_module').value = ''; // not used
+      document.getElementById('m_date').value = ''; // not used
+      document.getElementById('m_artifact').value = '';
+      document.getElementById('m_reflection').value = m.reflection || '';
+      document.getElementById('modalTitle').textContent = 'Edit member reflection';
+      document.getElementById('modal').style.display = 'flex';
+    }
+    function removeMember(btn){
+      const idx = btn.dataset.idx; if(confirm('Remove this member?')){state.members.splice(idx,1); render();}
+    }
+
+    function saveModal(){
+      const title = document.getElementById('m_title').value.trim();
+      const module = document.getElementById('m_module').value.trim();
+      const date = document.getElementById('m_date').value.trim();
+      const artifact = document.getElementById('m_artifact').value.trim();
+      const reflection = document.getElementById('m_reflection').value.trim();
+      if(!editing){closeModal();return}
+      if(editing.type==='activity'){
+        const a = state.activities[editing.idx]; a.title=title||a.title; a.module=module||a.module; a.date=date||a.date; a.artifact=artifact||a.artifact; a.reflection=reflection||a.reflection;
+      } else if(editing.type==='member'){
+        const m = state.members[editing.idx]; m.name = title || m.name; m.reflection = reflection || m.reflection;
+      }
+      editing=null; closeModal(); render();
+    }
+    function closeModal(){document.getElementById('modal').style.display='none';}
+
+    // Simple export
+    function exportHTML(){
+      const html = '<!doctype html>'+document.documentElement.innerHTML;
+      const blob = new Blob([html],{type:'text/html'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a'); a.href=url; a.download='index.html'; a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    function showPublishInstructions(){
+      alert('To publish: 1) Export this page (File > Save as or use Export button). 2) Create a GitHub repo named username.github.io and push index.html, or drag index.html to Netlify Drop. Then submit the published URL to your submission link.');
+    }
+
+    // initialize render
+    render();
+
+    // expose export to global so instructor can see the option
+    window.exportHTML = exportHTML;
+  </script>
+</body>
+</html>
